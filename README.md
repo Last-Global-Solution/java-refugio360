@@ -2,14 +2,12 @@
 
 API REST do **Refúgio 360**, solução CitizenTech para apoiar comunidades durante ondas de calor, enchentes e falta de energia. O serviço cadastra locais seguros, recebe ocorrências, mapeia pontos de risco e gera orientações contextualizadas para cidadãos e gestores.
 
-O projeto foi organizado no estilo do OlliPet: este README explica onde cada responsabilidade fica, como o app se autentica, quais rotas existem e como executar a API localmente.
-
 ## Links:
 | Tipo | Endereço |
 |---|---|
 | Swagger UI on Render | https://java-refugio360.onrender.com/swagger-ui/index.html |
 | Deploy on Render (web service) | https://java-refugio360.onrender.com |
-| Vídeo Pitch | http://localhost:8080/h2-console |
+| Vídeo Pitch | https://youtu.be/-IpDw2jfjxQ?is=HDPhgcPD1SHWVyHX |
 
 ## Como os dados e a autenticação funcionam
 
@@ -23,7 +21,7 @@ O front usa Firebase Authentication para cadastro e login. A API valida o ID tok
 | Orientações personalizadas | API Java + Spring AI/Gemini (com alternativa local) |
 | Geração assíncrona das orientações | RabbitMQ (evento `OcorrenciaRegistrada`) |
 
-**Repositório Mobile (app que consome esta API):** _adicionar o link do repositório do app_
+**Repositório Mobile (app que consome esta API):** _https://github.com/Last-Global-Solution/mobile-refugio360.git_
 
 O front não precisa guardar senha na API nem fazer um segundo login. Depois do login Firebase, envia o ID token no header `Authorization: Bearer <token>`.
 
