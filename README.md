@@ -5,8 +5,8 @@ API REST do **Refúgio 360**, solução CitizenTech para apoiar comunidades dura
 ## Links:
 | Tipo | Endereço |
 |---|---|
-| Swagger UI on Render | https://java-refugio360.onrender.com/swagger-ui/index.html |
-| Deploy on Render (web service) | https://java-refugio360.onrender.com |
+| Swagger UI on Render | https://java-refugio360-b723.onrender.com/swagger-ui/index.html |
+| Deploy on Render (web service) | https://java-refugio360-b723.onrender.com |
 | Vídeo Pitch | https://youtu.be/-IpDw2jfjxQ?is=HDPhgcPD1SHWVyHX |
 
 ## Como os dados e a autenticação funcionam
@@ -290,20 +290,20 @@ Urgências aceitas para ocorrências: `BAIXA`, `MEDIA`, `ALTA` e `CRITICA`. Nív
 
 ## Orientações com IA e RabbitMQ
 
-O cidadão não precisa pedir a orientação: ela é gerada assim que o relato é registrado, sem travar a resposta do app.
+A API salva a ocorrência e responde ao aplicativo sem esperar a orientação. A geração automática é disparada em segundo plano **somente quando o RabbitMQ está configurado e disponível** para receber o evento e executar o consumidor. Gemini é opcional; quando a geração é acionada sem Gemini ou o provedor falha, o backend usa o fallback local. Sem broker funcional, a orientação automática não é garantida.
 
 ```text
 App ──POST /api/ocorrencias──▶ API grava a ocorrência ──(após o commit)──▶ RabbitMQ
                                                                             │  exchange refugio360.eventos
                                                                             │  fila refugio360.ocorrencias.orientacao
                                                                             ▼
-                                     OrientacaoListener ──▶ Spring AI (Gemini) ──▶ grava a Orientacao
+                                     OrientacaoListener ──▶ Gemini opcional / fallback local ──▶ grava a Orientacao
 App ──GET /api/ocorrencias/{id}/orientacoes──▶ lê a orientação gerada
 ```
 
 1. `POST /api/ocorrencias` grava o relato ligado ao autor e devolve `201` na hora.
-2. Depois do commit, a API publica o evento `OcorrenciaRegistrada` no RabbitMQ.
-3. O consumidor (`OrientacaoListener`) chama o Spring AI com o relato, a urgência, o perfil e os três locais seguros mais próximos, e grava o resultado na entidade `Orientacao`.
+2. Depois do commit, a API tenta publicar o evento `OcorrenciaRegistrada` no RabbitMQ.
+3. Com o broker disponível, o consumidor (`OrientacaoListener`) processa o relato, a urgência, o perfil e os três locais seguros mais próximos; usa Gemini se configurado ou o fallback local e grava o resultado na entidade `Orientacao`.
 4. O app busca a orientação em `GET /api/ocorrencias/{id}/orientacoes`.
 
 `POST /api/ai/ocorrencias/{id}/orientacao?perfil=IDOSO` gera uma nova orientação na hora, por exemplo para outro público. Somente o autor ou gestor pode consultar/gerar orientações; ocorrências legadas sem autor ficam restritas ao gestor. O texto muda conforme o perfil: frases curtas e passos numerados para `IDOSO`, trajetos acessíveis para `PCD` e cuidados com crianças para `FAMILIA`.
