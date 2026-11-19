@@ -6,6 +6,7 @@ import org.fiap.gs_final.model.Ocorrencia;
 import org.fiap.gs_final.model.StatusOcorrencia;
 import org.fiap.gs_final.model.Usuario;
 import org.fiap.gs_final.repository.OcorrenciaRepository;
+import org.fiap.gs_final.security.UsuarioAtual;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +41,11 @@ public class OcorrenciaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Ocorrencia> listar(Pageable pageable) { return repository.findAll(pageable); }
+    public Page<Ocorrencia> listarPara(Usuario solicitante, Pageable pageable) {
+        if (solicitante == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticação necessária");
+        return UsuarioAtual.ehGestor(solicitante) ? repository.findAll(pageable)
+                : repository.findByAutorId(solicitante.getId(), pageable);
+    }
 
     @Transactional(readOnly = true)
     public Page<Ocorrencia> listarDoAutor(Usuario autor, Pageable pageable) {
@@ -50,6 +55,14 @@ public class OcorrenciaService {
     @Transactional(readOnly = true)
     public Ocorrencia buscar(Long id) { return repository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ocorrência não encontrada")); }
+
+    @Transactional(readOnly = true)
+    public Ocorrencia buscarPara(Long id, Usuario solicitante) {
+        if (solicitante == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticação necessária");
+        Ocorrencia ocorrencia = buscar(id);
+        if (UsuarioAtual.ehGestor(solicitante) || ocorrencia.pertenceA(solicitante)) return ocorrencia;
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Esta ocorrência pertence a outra pessoa ou não possui autor");
+    }
 
     @Transactional
     public Ocorrencia atualizar(Long id, OcorrenciaRequestDTO dto) {

@@ -39,10 +39,11 @@ public class OcorrenciaController {
         return OcorrenciaResponseDTO.de(service.criar(dto, usuarioAtual.de(jwt)));
     }
 
-    /** Mapa comunitário: todos os relatos, sem identificar quem os fez. */
+    /** Cidadãos veem apenas seus relatos; gestor pode consultar todos. */
     @GetMapping @PreAuthorize("hasAnyRole('CIDADAO','GESTOR')")
-    public Page<OcorrenciaResponseDTO> listar(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        return service.listar(pageable).map(OcorrenciaResponseDTO::de);
+    public Page<OcorrenciaResponseDTO> listar(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+                                             @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
+        return service.listarPara(usuarioAtual.de(jwt), pageable).map(OcorrenciaResponseDTO::de);
     }
 
     /** Relatos feitos por quem está logado. */
@@ -53,7 +54,10 @@ public class OcorrenciaController {
     }
 
     @GetMapping("/{id}") @PreAuthorize("hasAnyRole('CIDADAO','GESTOR')")
-    public OcorrenciaResponseDTO buscar(@PathVariable Long id) { return OcorrenciaResponseDTO.de(service.buscar(id)); }
+    public OcorrenciaResponseDTO buscar(@PathVariable Long id,
+                                       @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
+        return OcorrenciaResponseDTO.de(service.buscarPara(id, usuarioAtual.de(jwt)));
+    }
 
     /** Orientações já geradas para o relato (a automática e as pedidas depois). */
     @GetMapping("/{id}/orientacoes") @PreAuthorize("hasAnyRole('CIDADAO','GESTOR')")

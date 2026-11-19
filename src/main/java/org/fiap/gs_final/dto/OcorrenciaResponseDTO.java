@@ -3,8 +3,8 @@ package org.fiap.gs_final.dto;
 import org.fiap.gs_final.model.Ocorrencia;
 
 /**
- * O que a API devolve de uma ocorrência. Não expõe o autor: outros cidadãos
- * veem o relato, mas não quem o fez.
+ * O que a API devolve de uma ocorrência. Não expõe o autor;
+ * a autorização por usuário é aplicada pelo serviço antes da conversão.
  */
 public record OcorrenciaResponseDTO(
         Long id,

@@ -110,10 +110,10 @@ public class OrientacaoService {
 
     /**
      * Gestor vê tudo; cidadão, apenas os próprios relatos. Ocorrências sem autor
-     * (registradas antes do vínculo com o usuário) continuam acessíveis.
+     * (anteriores ao vínculo com o usuário) são restritas ao gestor.
      */
     private void verificarAcesso(Ocorrencia o, Usuario solicitante) {
-        if (UsuarioAtual.ehGestor(solicitante) || o.getAutor() == null || o.pertenceA(solicitante)) return;
+        if (UsuarioAtual.ehGestor(solicitante) || o.pertenceA(solicitante)) return;
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Esta ocorrência foi registrada por outra pessoa");
     }
 

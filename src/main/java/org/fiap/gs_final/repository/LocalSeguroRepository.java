@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LocalSeguroRepository extends JpaRepository<LocalSeguro, Long> {
+    boolean existsByNomeIgnoreCase(String nome);
 }
